@@ -64,7 +64,7 @@ def test_run_configuration_bails_for_monitor_start_soft_failure():
 
     results = list(module.run_configuration('test.yaml', config, arguments))
 
-    assert results == []
+    assert not results
 
 
 def test_run_configuration_logs_actions_error():
@@ -96,7 +96,7 @@ def test_run_configuration_bails_for_actions_soft_failure():
 
     results = list(module.run_configuration('test.yaml', config, arguments))
 
-    assert results == []
+    assert not results
 
 
 def test_run_configuration_logs_monitor_log_error():
@@ -131,7 +131,7 @@ def test_run_configuration_bails_for_monitor_log_soft_failure():
 
     results = list(module.run_configuration('test.yaml', config, arguments))
 
-    assert results == []
+    assert not results
 
 
 def test_run_configuration_logs_monitor_finish_error():
@@ -166,7 +166,7 @@ def test_run_configuration_bails_for_monitor_finish_soft_failure():
 
     results = list(module.run_configuration('test.yaml', config, arguments))
 
-    assert results == []
+    assert not results
 
 
 def test_run_configuration_does_not_call_monitoring_hooks_if_monitoring_hooks_are_disabled():
@@ -179,7 +179,7 @@ def test_run_configuration_does_not_call_monitoring_hooks_if_monitoring_hooks_ar
     config = {'repositories': [{'path': 'foo'}]}
     arguments = {'global': flexmock(monitoring_verbosity=-2, dry_run=False), 'create': flexmock()}
     results = list(module.run_configuration('test.yaml', config, arguments))
-    assert results == []
+    assert not results
 
 
 def test_run_configuration_logs_on_error_hook_error():
@@ -225,7 +225,7 @@ def test_run_configuration_retries_soft_error():
     config = {'repositories': [{'path': 'foo'}], 'retries': 1}
     arguments = {'global': flexmock(monitoring_verbosity=1, dry_run=False), 'create': flexmock()}
     results = list(module.run_configuration('test.yaml', config, arguments))
-    assert results == []
+    assert not results
 
 
 def test_run_configuration_retries_hard_error():
@@ -883,7 +883,7 @@ def test_log_error_records_generates_nothing_for_other_error():
 
     logs = tuple(module.log_error_records('Error', KeyError()))
 
-    assert logs == ()
+    assert not logs
 
 
 def test_get_local_path_uses_configuration_value():

@@ -28,7 +28,7 @@ def make_extra_environment(database, restore_connection_params=None):
     Make the extra_environment dict from the given database configuration.
     If restore connection params are given, this is for a restore operation.
     '''
-    extra = dict()
+    extra = {}
 
     try:
         if restore_connection_params:
@@ -239,7 +239,7 @@ def restore_database_dump(
         'restore_username', database.get('username')
     )
 
-    all_databases = bool(database['name'] == 'all')
+    all_databases = database['name'] == 'all'
     dump_filename = dump.make_database_dump_filename(
         make_dump_path(config), database['name'], database.get('hostname')
     )

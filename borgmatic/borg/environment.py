@@ -29,9 +29,7 @@ def make_environment(config):
     environment = {}
 
     for option_name, environment_variable_name in OPTION_TO_ENVIRONMENT_VARIABLE.items():
-        value = config.get(option_name)
-
-        if value:
+        if value := config.get(option_name):
             environment[environment_variable_name] = str(value)
 
     for (

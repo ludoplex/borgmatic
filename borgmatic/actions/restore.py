@@ -71,7 +71,7 @@ def restore_single_database(
     hook_name,
     database,
     connection_params,
-):  # pragma: no cover
+):    # pragma: no cover
     '''
     Given (among other things) an archive name, a database hook name, the hostname,
     port, username and password as connection params, and a configured database
@@ -94,16 +94,16 @@ def restore_single_database(
         dry_run=global_arguments.dry_run,
         repository=repository['path'],
         archive=archive_name,
-        paths=borgmatic.hooks.dump.convert_glob_patterns_to_borg_patterns([dump_pattern]),
+        paths=borgmatic.hooks.dump.convert_glob_patterns_to_borg_patterns(
+            [dump_pattern]
+        ),
         config=config,
         local_borg_version=local_borg_version,
         global_arguments=global_arguments,
         local_path=local_path,
         remote_path=remote_path,
         destination_path='/',
-        # A directory format dump isn't a single file, and therefore can't extract
-        # to stdout. In this case, the extract_process return value is None.
-        extract_to_stdout=bool(database.get('format') != 'directory'),
+        extract_to_stdout=database.get('format') != 'directory',
     )
 
     # Run a single database restore, consuming the extract stdout (if any).
@@ -161,7 +161,7 @@ def collect_archive_database_names(
         try:
             (hook_name, _, database_name) = dump_path.split(
                 borgmatic_source_directory + os.path.sep, 1
-            )[1].split(os.path.sep)[0:3]
+            )[1].split(os.path.sep)[:3]
         except (ValueError, IndexError):
             logger.warning(
                 f'{repository}: Ignoring invalid database dump path "{dump_path}" in archive {archive}'
@@ -205,15 +205,20 @@ def find_databases_to_restore(requested_database_names, archive_database_names):
     if not restore_names[UNSPECIFIED_HOOK]:
         restore_names.pop(UNSPECIFIED_HOOK)
 
-    combined_restore_names = set(
-        name for database_names in restore_names.values() for name in database_names
-    )
-    combined_archive_database_names = set(
-        name for database_names in archive_database_names.values() for name in database_names
-    )
+    combined_restore_names = {
+        name
+        for database_names in restore_names.values()
+        for name in database_names
+    }
+    combined_archive_database_names = {
+        name
+        for database_names in archive_database_names.values()
+        for name in database_names
+    }
 
-    missing_names = sorted(set(combined_restore_names) - combined_archive_database_names)
-    if missing_names:
+    if missing_names := sorted(
+        set(combined_restore_names) - combined_archive_database_names
+    ):
         joined_names = ', '.join(f'"{name}"' for name in missing_names)
         raise ValueError(
             f"Cannot restore database{'s' if len(missing_names) > 1 else ''} {joined_names} missing from archive"
@@ -228,18 +233,17 @@ def ensure_databases_found(restore_names, remaining_restore_names, found_names):
     database names to restore, and a sequence of found (actually restored) database names, raise
     ValueError if requested databases to restore were missing from the archive and/or configuration.
     '''
-    combined_restore_names = set(
+    combined_restore_names = {
         name
         for database_names in tuple(restore_names.values())
         + tuple(remaining_restore_names.values())
         for name in database_names
-    )
+    }
 
     if not combined_restore_names and not found_names:
         raise ValueError('No databases were found to restore')
 
-    missing_names = sorted(set(combined_restore_names) - set(found_names))
-    if missing_names:
+    if missing_names := sorted(set(combined_restore_names) - set(found_names)):
         joined_names = ', '.join(f'"{name}"' for name in missing_names)
         raise ValueError(
             f"Cannot restore database{'s' if len(missing_names) > 1 else ''} {joined_names} missing from borgmatic's configuration"

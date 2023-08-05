@@ -40,14 +40,15 @@ def run_list(
             local_path,
             remote_path,
         )
-        json_output = borgmatic.borg.list.list_archive(
+        if json_output := borgmatic.borg.list.list_archive(
             repository['path'],
             config,
             local_borg_version,
-            borgmatic.actions.arguments.update_arguments(list_arguments, archive=archive_name),
+            borgmatic.actions.arguments.update_arguments(
+                list_arguments, archive=archive_name
+            ),
             global_arguments,
             local_path,
             remote_path,
-        )
-        if json_output:  # pragma: nocover
+        ):
             yield json.loads(json_output)

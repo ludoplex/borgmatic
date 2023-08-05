@@ -169,7 +169,7 @@ def build_restore_command(extract_process, database, dump_filename, connection_p
     if hostname:
         command.extend(('--host', hostname))
     if port:
-        command.extend(('--port', str(port)))
+        command.extend(('--port', port))
     if username:
         command.extend(('--username', username))
     if password:

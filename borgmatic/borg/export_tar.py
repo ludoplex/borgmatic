@@ -56,11 +56,7 @@ def export_tar_archive(
         + (tuple(paths) if paths else ())
     )
 
-    if list_files:
-        output_log_level = logging.ANSWER
-    else:
-        output_log_level = logging.INFO
-
+    output_log_level = logging.ANSWER if list_files else logging.INFO
     if dry_run:
         logging.info(f'{repository_path}: Skipping export to tar file (dry run)')
         return

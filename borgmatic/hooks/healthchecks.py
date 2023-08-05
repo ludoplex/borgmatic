@@ -62,7 +62,7 @@ def format_buffered_logs_for_payload():
         # No handler means no payload.
         return ''
 
-    payload = ''.join(message for message in buffering_handler.buffer)
+    payload = ''.join(buffering_handler.buffer)
 
     if buffering_handler.forgot:
         return PAYLOAD_TRUNCATION_INDICATOR + payload
@@ -109,8 +109,7 @@ def ping_monitor(hook_config, config, config_filename, state, monitoring_log_lev
         )
         return
 
-    healthchecks_state = MONITOR_STATE_TO_HEALTHCHECKS.get(state)
-    if healthchecks_state:
+    if healthchecks_state := MONITOR_STATE_TO_HEALTHCHECKS.get(state):
         ping_url = f'{ping_url}/{healthchecks_state}'
 
     logger.info(f'{config_filename}: Pinging Healthchecks {state.name.lower()}{dry_run_label}')

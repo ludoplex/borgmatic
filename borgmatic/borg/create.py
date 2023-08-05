@@ -204,15 +204,8 @@ def make_list_filter_flags(local_borg_version, dry_run):
     show_excludes = logger.isEnabledFor(logging.DEBUG)
 
     if feature.available(feature.Feature.EXCLUDED_FILES_MINUS, local_borg_version):
-        if show_excludes or dry_run:
-            return f'{base_flags}+-'
-        else:
-            return base_flags
-
-    if show_excludes:
-        return f'{base_flags}x-'
-    else:
-        return f'{base_flags}-'
+        return f'{base_flags}+-' if show_excludes or dry_run else base_flags
+    return f'{base_flags}x-' if show_excludes else f'{base_flags}-'
 
 
 DEFAULT_ARCHIVE_NAME_FORMAT = '{hostname}-{now:%Y-%m-%dT%H:%M:%S.%f}'  # noqa: FS003
@@ -256,7 +249,7 @@ def special_file(path):
     '''
     try:
         mode = os.stat(path).st_mode
-    except (FileNotFoundError, OSError):
+    except OSError:
         return False
 
     return stat.S_ISCHR(mode) or stat.S_ISBLK(mode) or stat.S_ISFIFO(mode)
@@ -267,11 +260,10 @@ def any_parent_directories(path, candidate_parents):
     Return whether any of the given candidate parent directories are an actual parent of the given
     path. This includes grandparents, etc.
     '''
-    for parent in candidate_parents:
-        if pathlib.PurePosixPath(parent) in pathlib.PurePath(path).parents:
-            return True
-
-    return False
+    return any(
+        pathlib.PurePosixPath(parent) in pathlib.PurePath(path).parents
+        for parent in candidate_parents
+    )
 
 
 def collect_special_file_paths(
@@ -313,12 +305,14 @@ def check_all_source_directories_exist(source_directories):
     Given a sequence of source directories, check that they all exist. If any do not, raise an
     exception.
     '''
-    missing_directories = [
+    if missing_directories := [
         source_directory
         for source_directory in source_directories
-        if not all([os.path.exists(directory) for directory in expand_directory(source_directory)])
-    ]
-    if missing_directories:
+        if not all(
+            os.path.exists(directory)
+            for directory in expand_directory(source_directory)
+        )
+    ]:
         raise ValueError(f"Source directories do not exist: {', '.join(missing_directories)}")
 
 
@@ -472,15 +466,13 @@ def create_archive(
     # cause Borg to hang. But skip this if the user has explicitly set the "read_special" to True.
     if stream_processes and not config.get('read_special'):
         logger.debug(f'{repository_path}: Collecting special file paths')
-        special_file_paths = collect_special_file_paths(
+        if special_file_paths := collect_special_file_paths(
             create_flags + create_positional_arguments,
             local_path,
             working_directory,
             borg_environment,
             skip_directories=borgmatic_source_directories,
-        )
-
-        if special_file_paths:
+        ):
             logger.warning(
                 f'{repository_path}: Excluding special files to prevent Borg from hanging: {", ".join(special_file_paths)}'
             )

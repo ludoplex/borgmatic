@@ -115,8 +115,7 @@ def run_configuration(config_filename, config, arguments):
             logger.debug(
                 f'{repository.get("label", repository["path"])}: Running actions for repository'
             )
-            timeout = retry_num * retry_wait
-            if timeout:
+            if timeout := retry_num * retry_wait:
                 logger.warning(
                     f'{repository.get("label", repository["path"])}: Sleeping {timeout}s before next retry'
                 )
@@ -704,14 +703,14 @@ def collect_configuration_run_summary_logs(configs, arguments):
     As a side effect of running through these configuration files, output their JSON results, if
     any, to stdout.
     '''
-    # Run cross-file validation checks.
-    repository = None
-
-    for action_name, action_arguments in arguments.items():
-        if hasattr(action_arguments, 'repository'):
-            repository = getattr(action_arguments, 'repository')
-            break
-
+    repository = next(
+        (
+            getattr(action_arguments, 'repository')
+            for action_name, action_arguments in arguments.items()
+            if hasattr(action_arguments, 'repository')
+        ),
+        None,
+    )
     try:
         if 'extract' in arguments or 'mount' in arguments:
             validate.guard_single_repository_selected(repository, configs)
@@ -745,9 +744,11 @@ def collect_configuration_run_summary_logs(configs, arguments):
     json_results = []
     for config_filename, config in configs.items():
         results = list(run_configuration(config_filename, config, arguments))
-        error_logs = tuple(result for result in results if isinstance(result, logging.LogRecord))
-
-        if error_logs:
+        if error_logs := tuple(
+            result
+            for result in results
+            if isinstance(result, logging.LogRecord)
+        ):
             yield from log_error_records(f'{config_filename}: An error occurred')
             yield from error_logs
         else:

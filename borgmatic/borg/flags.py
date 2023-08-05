@@ -13,10 +13,7 @@ def make_flags(name, value):
 
     flag = f"--{name.replace('_', '-')}"
 
-    if value is True:
-        return (flag,)
-
-    return (flag, str(value))
+    return (flag, ) if value is True else (flag, str(value))
 
 
 def make_flags_from_arguments(arguments, excludes=()):

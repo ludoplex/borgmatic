@@ -137,8 +137,6 @@ def extract_archive(
             working_directory=destination_path,
             extra_environment=borg_environment,
         )
-        return None
-
     if extract_to_stdout:
         return execute_command(
             full_command,

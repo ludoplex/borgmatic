@@ -39,14 +39,15 @@ def run_info(
             local_path,
             remote_path,
         )
-        json_output = borgmatic.borg.info.display_archives_info(
+        if json_output := borgmatic.borg.info.display_archives_info(
             repository['path'],
             config,
             local_borg_version,
-            borgmatic.actions.arguments.update_arguments(info_arguments, archive=archive_name),
+            borgmatic.actions.arguments.update_arguments(
+                info_arguments, archive=archive_name
+            ),
             global_arguments,
             local_path,
             remote_path,
-        )
-        if json_output:  # pragma: nocover
+        ):
             yield json.loads(json_output)
