@@ -25,13 +25,12 @@ custom_message_headers = {
 
 
 def return_default_message_headers(state=Enum):
-    headers = {
+    return {
         'X-Title': f'A borgmatic {state.name} event happened',
         'X-Message': f'A borgmatic {state.name} event happened',
         'X-Priority': 'default',
         'X-Tags': 'borgmatic',
     }
-    return headers
 
 
 def test_ping_monitor_minimal_config_hits_hosted_ntfy_on_fail():

@@ -16,10 +16,7 @@ def to_bool(arg):
     if isinstance(arg, str):
         arg = arg.lower()
 
-    if arg in ('yes', 'on', '1', 'true', 1):
-        return True
-
-    return False
+    return arg in ('yes', 'on', '1', 'true', 1)
 
 
 def interactive_console():
@@ -43,10 +40,7 @@ def should_do_markup(no_color, configs):
 
     py_colors = os.environ.get('PY_COLORS', None)
 
-    if py_colors is not None:
-        return to_bool(py_colors)
-
-    return interactive_console()
+    return to_bool(py_colors) if py_colors is not None else interactive_console()
 
 
 class Multi_stream_handler(logging.Handler):
@@ -105,10 +99,7 @@ def color_text(color, message):
     '''
     Give colored text.
     '''
-    if not color:
-        return message
-
-    return f'{color}{message}{colorama.Style.RESET_ALL}'
+    return message if not color else f'{color}{message}{colorama.Style.RESET_ALL}'
 
 
 def add_logging_level(level_name, level_number):

@@ -20,10 +20,8 @@ def test_validate_config_command_with_invalid_configuration_fails():
 
         subprocess.check_call(f'borgmatic config generate --destination {config_path}'.split(' '))
         config = open(config_path).read().replace('keep_daily: 7', 'keep_daily: "7"')
-        config_file = open(config_path, 'w')
-        config_file.write(config)
-        config_file.close()
-
+        with open(config_path, 'w') as config_file:
+            config_file.write(config)
         exit_code = subprocess.call(f'validate-borgmatic-config --config {config_path}'.split(' '))
 
         assert exit_code == 1

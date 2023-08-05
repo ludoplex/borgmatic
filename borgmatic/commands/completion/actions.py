@@ -24,13 +24,13 @@ def available_actions(subparsers, current_action=None):
     action_to_subactions = borgmatic.commands.arguments.get_subactions_for_actions(
         subparsers.choices
     )
-    current_subactions = action_to_subactions.get(current_action)
-
-    if current_subactions:
+    if current_subactions := action_to_subactions.get(current_action):
         return current_subactions
 
-    all_subactions = set(
-        subaction for subactions in action_to_subactions.values() for subaction in subactions
-    )
+    all_subactions = {
+        subaction
+        for subactions in action_to_subactions.values()
+        for subaction in subactions
+    }
 
     return tuple(action for action in subparsers.choices.keys() if action not in all_subactions)

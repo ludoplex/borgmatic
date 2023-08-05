@@ -328,7 +328,7 @@ def deep_merge_nodes(nodes):
 
         # The merged node inherits its attributes from the final node in the group.
         (last_node_key, last_node_value) = grouped_nodes[-1]
-        value_types = set(type(value) for (_, value) in grouped_nodes)
+        value_types = {type(value) for (_, value) in grouped_nodes}
 
         if len(value_types) > 1:
             raise ValueError(

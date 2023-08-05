@@ -61,7 +61,7 @@ class Validation_error(ValueError):
         '''
         return (
             f'An error occurred while parsing a configuration file at {self.config_filename}:\n'
-            + '\n'.join(error for error in self.errors)
+            + '\n'.join(self.errors)
         )
 
 
@@ -118,9 +118,7 @@ def parse_configuration(config_filename, schema_filename, overrides=None, resolv
         validator = jsonschema.Draft7Validator(schema)
     except AttributeError:  # pragma: no cover
         validator = jsonschema.Draft4Validator(schema)
-    validation_errors = tuple(validator.iter_errors(config))
-
-    if validation_errors:
+    if validation_errors := tuple(validator.iter_errors(config)):
         raise Validation_error(
             config_filename, tuple(format_json_error(error) for error in validation_errors)
         )

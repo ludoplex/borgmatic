@@ -141,7 +141,7 @@ def parse_arguments_for_actions(unparsed_arguments, action_parsers, global_parse
     by any action parser).
     '''
     arguments = collections.OrderedDict()
-    help_requested = bool('--help' in unparsed_arguments or '-h' in unparsed_arguments)
+    help_requested = '--help' in unparsed_arguments or '-h' in unparsed_arguments
     remaining_action_arguments = []
     alias_to_action_name = {
         alias: action_name for action_name, aliases in ACTION_ALIASES.items() for alias in aliases
@@ -161,10 +161,7 @@ def parse_arguments_for_actions(unparsed_arguments, action_parsers, global_parse
         if not action_parser:
             continue
 
-        subaction_parsers = get_subaction_parsers(action_parser)
-
-        # But first parse with subaction parsers, if any.
-        if subaction_parsers:
+        if subaction_parsers := get_subaction_parsers(action_parser):
             subactions_parsed = False
 
             for subaction_name, subaction_parser in subaction_parsers.items():
@@ -185,14 +182,12 @@ def parse_arguments_for_actions(unparsed_arguments, action_parsers, global_parse
                     subactions_parsed = True
 
             if not subactions_parsed:
-                if help_requested:
-                    action_parser.print_help()
-                    sys.exit(0)
-                else:
+                if not help_requested:
                     raise ValueError(
                         f"Missing sub-action after {action_name} action. Expected one of: {', '.join(get_subactions_for_actions(action_parsers)[action_name])}"
                     )
-        # Otherwise, parse with the main action parser.
+                action_parser.print_help()
+                sys.exit(0)
         else:
             remaining_action_arguments.append(
                 parse_and_record_action_arguments(
@@ -1225,9 +1220,9 @@ def parse_arguments(*unparsed_arguments):
                 f'The {action_name} action cannot be combined with other actions. Please run it separately.'
             )
 
-    unknown_arguments = get_unparsable_arguments(remaining_action_arguments)
-
-    if unknown_arguments:
+    if unknown_arguments := get_unparsable_arguments(
+        remaining_action_arguments
+    ):
         if '--help' in unknown_arguments or '-h' in unknown_arguments:
             global_plus_action_parser.print_help()
             sys.exit(0)

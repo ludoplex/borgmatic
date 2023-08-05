@@ -29,7 +29,7 @@ def run_rinfo(
                 f'{repository.get("label", repository["path"])}: Displaying repository summary information'
             )
 
-        json_output = borgmatic.borg.rinfo.display_repository_info(
+        if json_output := borgmatic.borg.rinfo.display_repository_info(
             repository['path'],
             config,
             local_borg_version,
@@ -37,6 +37,5 @@ def run_rinfo(
             global_arguments=global_arguments,
             local_path=local_path,
             remote_path=remote_path,
-        )
-        if json_output:  # pragma: nocover
+        ):
             yield json.loads(json_output)

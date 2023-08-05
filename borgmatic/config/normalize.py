@@ -37,9 +37,7 @@ def normalize_sections(config_filename, config):
 
     # Move any options from deprecated sections into the global scope.
     for section_name in ('location', 'storage', 'retention', 'consistency', 'output', 'hooks'):
-        section_config = config.get(section_name)
-
-        if section_config:
+        if section_config := config.get(section_name):
             any_section_upgraded = True
             del config[section_name]
             config.update(section_config)
@@ -189,9 +187,7 @@ def normalize(config_filename, config):
         )
         config['upload_rate_limit'] = remote_rate_limit
 
-    # Upgrade remote repositories to ssh:// syntax, required in Borg 2.
-    repositories = config.get('repositories')
-    if repositories:
+    if repositories := config.get('repositories'):
         if isinstance(repositories[0], str):
             logs.append(
                 logging.makeLogRecord(
@@ -219,39 +215,42 @@ def normalize(config_filename, config):
                         )
                     )
                 )
-            if ':' in repository_path:
-                if repository_path.startswith('file://'):
-                    updated_repository_path = os.path.abspath(
-                        repository_path.partition('file://')[-1]
+            if ':' in repository_path and repository_path.startswith(
+                'file://'
+            ):
+                updated_repository_path = os.path.abspath(
+                    repository_path.partition('file://')[-1]
+                )
+                config['repositories'].append(
+                    dict(
+                        repository_dict,
+                        path=updated_repository_path,
                     )
-                    config['repositories'].append(
-                        dict(
-                            repository_dict,
-                            path=updated_repository_path,
-                        )
-                    )
-                elif repository_path.startswith('ssh://'):
-                    config['repositories'].append(repository_dict)
-                else:
-                    rewritten_repository_path = f"ssh://{repository_path.replace(':~', '/~').replace(':/', '/').replace(':', '/./')}"
-                    logs.append(
-                        logging.makeLogRecord(
-                            dict(
-                                levelno=logging.WARNING,
-                                levelname='WARNING',
-                                msg=f'{config_filename}: Remote repository paths without ssh:// syntax are deprecated and support will be removed from a future release. Interpreting "{repository_path}" as "{rewritten_repository_path}"',
-                            )
-                        )
-                    )
-                    config['repositories'].append(
-                        dict(
-                            repository_dict,
-                            path=rewritten_repository_path,
-                        )
-                    )
-            else:
+                )
+            elif (
+                ':' in repository_path
+                and not repository_path.startswith('file://')
+                and repository_path.startswith('ssh://')
+                or ':' not in repository_path
+            ):
                 config['repositories'].append(repository_dict)
-
+            else:
+                rewritten_repository_path = f"ssh://{repository_path.replace(':~', '/~').replace(':/', '/').replace(':', '/./')}"
+                logs.append(
+                    logging.makeLogRecord(
+                        dict(
+                            levelno=logging.WARNING,
+                            levelname='WARNING',
+                            msg=f'{config_filename}: Remote repository paths without ssh:// syntax are deprecated and support will be removed from a future release. Interpreting "{repository_path}" as "{rewritten_repository_path}"',
+                        )
+                    )
+                )
+                config['repositories'].append(
+                    dict(
+                        repository_dict,
+                        path=rewritten_repository_path,
+                    )
+                )
     if config.get('prefix'):
         logs.append(
             logging.makeLogRecord(

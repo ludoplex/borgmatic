@@ -21,9 +21,9 @@ def exit_code_indicates_error(command, exit_code, borg_local_path=None):
         return False
 
     if borg_local_path and command[0] == borg_local_path:
-        return bool(exit_code < 0 or exit_code >= BORG_ERROR_EXIT_CODE)
+        return exit_code < 0 or exit_code >= BORG_ERROR_EXIT_CODE
 
-    return bool(exit_code != 0)
+    return exit_code != 0
 
 
 def command_for_process(process):
@@ -143,13 +143,13 @@ def log_outputs(processes, exclude_stdouts, output_log_level, borg_local_path):
 
                 # Collect any straggling output lines that came in since we last gathered output.
                 while output_buffer:  # pragma: no cover
-                    line = output_buffer.readline().rstrip().decode()
-                    if not line:
-                        break
+                    if line := output_buffer.readline().rstrip().decode():
+                        append_last_lines(
+                            last_lines, captured_outputs[process], line, output_log_level=logging.ERROR
+                        )
 
-                    append_last_lines(
-                        last_lines, captured_outputs[process], line, output_log_level=logging.ERROR
-                    )
+                    else:
+                        break
 
                 if len(last_lines) == ERROR_OUTPUT_MAX_LINE_COUNT:
                     last_lines.insert(0, '...')
@@ -215,7 +215,7 @@ def execute_command(
     '''
     log_command(full_command, input_file, output_file)
     environment = {**os.environ, **extra_environment} if extra_environment else None
-    do_not_capture = bool(output_file is DO_NOT_CAPTURE)
+    do_not_capture = output_file is DO_NOT_CAPTURE
     command = ' '.join(full_command) if shell else full_command
 
     process = subprocess.Popen(
@@ -305,7 +305,7 @@ def execute_command_with_processes(
     '''
     log_command(full_command, input_file, output_file)
     environment = {**os.environ, **extra_environment} if extra_environment else None
-    do_not_capture = bool(output_file is DO_NOT_CAPTURE)
+    do_not_capture = output_file is DO_NOT_CAPTURE
     command = ' '.join(full_command) if shell else full_command
 
     try:

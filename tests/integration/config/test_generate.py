@@ -31,7 +31,7 @@ def test_comment_out_line_skips_already_commented_out_line():
 def test_comment_out_line_comments_section_name():
     line = 'figgy-pudding:'
 
-    assert module.comment_out_line(line) == '# ' + line
+    assert module.comment_out_line(line) == f'# {line}'
 
 
 def test_comment_out_line_comments_indented_option():
@@ -49,7 +49,7 @@ def test_comment_out_line_comments_twice_indented_option():
 def test_comment_out_optional_configuration_comments_optional_config_only():
     # The "# COMMENT_OUT" comment is a sentinel used to express that the following key is optional.
     # It's stripped out of the final output.
-    flexmock(module).comment_out_line = lambda line: '# ' + line
+    flexmock(module).comment_out_line = lambda line: f'# {line}'
     config = '''
 # COMMENT_OUT
 foo:

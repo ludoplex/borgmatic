@@ -97,7 +97,7 @@ def run_create(
         )
     stream_processes = [process for processes in active_dumps.values() for process in processes]
 
-    json_output = borgmatic.borg.create.create_archive(
+    if json_output := borgmatic.borg.create.create_archive(
         global_arguments.dry_run,
         repository['path'],
         config,
@@ -110,8 +110,7 @@ def run_create(
         json=create_arguments.json,
         list_files=create_arguments.list_files,
         stream_processes=stream_processes,
-    )
-    if json_output:  # pragma: nocover
+    ):
         yield json.loads(json_output)
 
     borgmatic.hooks.dispatch.call_hooks_even_if_unconfigured(

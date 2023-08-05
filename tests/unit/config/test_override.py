@@ -10,7 +10,7 @@ def test_set_values_with_empty_keys_bails():
 
     module.set_values(config, keys=(), value='value')
 
-    assert config == {}
+    assert not config
 
 
 def test_set_values_with_one_key_sets_it_into_config():

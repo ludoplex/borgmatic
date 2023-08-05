@@ -24,9 +24,8 @@ def generate_configuration(config_path, repository_path):
         .replace('- /var/log/syslog*', '')
         + 'encryption_passphrase: "test"'
     )
-    config_file = open(config_path, 'w')
-    config_file.write(config)
-    config_file.close()
+    with open(config_path, 'w') as config_file:
+        config_file.write(config)
 
 
 def test_borgmatic_command():

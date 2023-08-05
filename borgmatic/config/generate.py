@@ -61,7 +61,7 @@ def comment_out_line(line):
 
     # Comment out the names of optional options, inserting the '#' after any indent for aesthetics.
     matches = re.match(r'(\s*)', line)
-    indent_spaces = matches.group(0) if matches else ''
+    indent_spaces = matches[0] if matches else ''
     count_indent_spaces = len(indent_spaces)
 
     return '# '.join((indent_spaces, line[count_indent_spaces:]))
